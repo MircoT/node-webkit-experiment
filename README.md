@@ -19,14 +19,17 @@ npm install
 node server.js
 ```
 
-**Notes**: packages have been created using *node-webkit v0.10.0-rc2*.
+**Notes**: packages have been created using **node-webkit v0.10.0-rc2**.
 
 ## Client
 
 The client is a Web App that uses HTML 5, CSS 3 and javascript. You can try it
-simply opening the index.html file, or you can use the packages tha you find in
+simply opening the *index.html* file, or you can use the packages tha you find in
 the server folder. Otherwise you can create your own package following the
 instructions on the main [website](https://github.com/rogerwang/node-webkit/wiki/How-to-package-and-distribute-your-apps).
+
+**Notes**: remember that as default the server url is *http://node-webkit-seminar.herokuapp.com*,
+so you must change this url depending on where you hosted the sever.
 
 ## License
 
