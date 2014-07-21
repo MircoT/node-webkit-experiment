@@ -1,0 +1,15 @@
+{
+  "name": "NodeJS-Server",
+  "description": "Server for the seminary of HKBU Summer Internship 2014",
+  "version": "1.0.0",
+  "license" : "MIT",
+  "main": "server.js",
+  "dependencies": {
+    "express": "3.x",
+    "request": "2.x",
+    "cheerio": "0.17.x",
+    "underscore": ">=1.6.0",
+    "underscore.string": ">=2.3.3",
+    "logfmt": ">=1.1.2"
+  }
+}
