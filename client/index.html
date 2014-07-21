@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WebApp</title>
+
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic' rel='stylesheet' type='text/css'>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-switch.min.css" rel="stylesheet">
+
+    <!-- pnotify -->
+    <link href="css/pnotify.custom.min.css" rel="stylesheet">
+    
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class='container'>
+      <h1 class="text-center">WebApp</h1>
+      <hr></hr>
+      <div class="panel panel-default">
+        <!-- Default panel contents -->
+
+        <div class="panel-heading">
+          <h3 id="scoretitle" class="panel-title text-center">Scoreboard - Challenge points</h3>
+        </div>
+
+        <div class="panel panel-body">
+            <!-- Table -->
+            <table id="results" class="table table-striped row-border" cellspacing="0" width="100%">
+
+            </table>
+        </div>
+      </div>
+      <form class='form' action="/" id="submitForm">
+        <input class="form-control" type="text" name="username" placeholder="Name">
+        <hr></hr>
+        <input class="form-control" type="text" name="word1" placeholder="word 1">
+        <input class="form-control" type="text" name="word2" placeholder="word 2">
+        <hr></hr>
+        <input class="form-control" type="text" name="token" placeholder="token">
+        <hr></hr>
+        <input class="btn btn-primary btn-block" type="submit" value="Submit">
+      </form>
+      <hr></hr>
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <input type="checkbox" name="native-notification"></input> Enable native notifications 
+        </div>
+        <div class="panel-body">
+          <input type="checkbox" name="slow-connection"></input> Slow connection 
+        </div>
+      </div>
+    </div>
+    <!-- underscore -->
+    <script src="js/underscore-min.js"></script>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-switch.min.js"></script>
+    <!-- pnotify -->
+    <script src="js/pnotify.custom.min.js"></script>
+    <script language="javascript">
+        var interval_refresh,
+            name,
+            native = false,
+            first_connection = true;
+
+        function enable_native_notifications(){
+          return PNotify.desktop.checkPermission() == 0 && native;
+        }
+
+        function insertTable_finalScore(element, index, list){
+          $('#tablebody').append(
+            "<tr><td>%NAME%</td><td>%SCORE%</td><td><span class='badge'>%TOKENS%</span></td></tr>".replace(
+              "%NAME%", element[0]).replace(
+              "%SCORE%", element[1]).replace(
+              "%TOKENS%", element[2])
+            );
+        }
+
+        function insertTable_challenge(element, index, list){
+          $('#tablebody').append(
+            "<tr><td>%NUM%</td><td>%SCORE%</td><td>%NAMES%</td></tr>".replace(
+              "%NUM%", element[0]).replace(
+              "%SCORE%", element[1][0]).replace(
+              "%NAMES%", element[1][1].join(", "))
+            );
+        }
+
+        function load_scoreboard(){
+          $.ajax({
+              type: 'GET',
+              url: "http://node-webkit-seminar.herokuapp.com/scoreboard"
+            }).done(function(data){
+              console.log(data);
+              if(!(_.has(data, "challenge_scoreboard") && _.isEmpty(data.challenge_scoreboard))){
+                $('#results').empty();
+                if(_.has(data, "challenge_scoreboard")){
+                  $('#results').append("<thead><tr><th>#</th><th>Points</th><th>Names</th></tr></thead>" );
+                  $('#results').append("<tbody id='tablebody'></tbody>")
+                  _.each(data.challenge_scoreboard, insertTable_challenge);
+                }
+                else{
+                  $('#scoretitle').text("Final scores")
+                  $('#results').append("<thead><tr><th>Name</th><th>Points</th><th>Tokens</th></tr></thead>" );
+                  $('#results').append("<tbody id='tablebody'></tbody>")
+                  _.each(data.final_scores, insertTable_finalScore);
+                } 
+              }
+              if(first_connection){
+                new PNotify({
+                  desktop: {
+                    desktop: enable_native_notifications()
+                  },
+                  title: 'Loading',
+                  text: 'Connection established...',
+                  type: 'success',
+                  icon: false,
+                  animation: 'slide'
+                });
+                first_connection = false;
+              }
+            }).error(function(err){
+              new PNotify({
+                desktop: {
+                  desktop: enable_native_notifications()
+                },
+                title: 'Loading',
+                text: 'Sorry, there are some problem with the server! Close the application and try again...',
+                type: 'error',
+                icon: false,
+                animation: 'slide'
+              });
+              clearInterval(interval_refresh);
+            });
+          }
+
+        $( "#submitForm" ).submit(function( event ) {
+          // Stop form from submitting normally
+          event.preventDefault();
+          // Get some values from elements on the page:
+          var $form = $( this );
+          var username = $form.find( "input[name='username']" ).val();
+          if(_.isEmpty(username)){
+            new PNotify({
+              desktop: {
+                desktop: enable_native_notifications()
+              },
+              title: 'Submit Error',
+              text: "You haven't inserted the name...",
+              type: 'error',
+              icon: false,
+              animation: 'slide'
+            });
+            return;
+          }
+          else if(username.split(" ").length != 1){
+            new PNotify({
+              desktop: {
+                desktop: enable_native_notifications()
+              },
+              title: 'Submit Error',
+              text: "Name must be only a word...",
+              type: 'error',
+              icon: false,
+              animation: 'slide'
+            });
+            return;
+          }
+          var word1 = $form.find( "input[name='word1']" ).val();
+          var word2 = $form.find( "input[name='word2']" ).val();
+          var token = $form.find( "input[name='token']" ).val();
+          var all_data = {'name': username}
+          if(!_.isEmpty(word1)) all_data['word1'] = word1;
+          if(!_.isEmpty(word2)) all_data['word2'] = word2;
+          if(!_.isEmpty(token)) all_data['token'] = token;
+          $.ajax({
+              type: 'GET',
+              url: "http://node-webkit-seminar.herokuapp.com/submit",
+              data: all_data
+            }).done(function(data){
+              new PNotify({
+                desktop: {
+                  desktop: enable_native_notifications()
+                },
+                title: 'Submit success',
+                text: data.message,
+                type: 'success',
+                icon: false,
+                animation: 'slide'
+              });
+              var score = (!_.isUndefined(data.your_score)) ? data.your_score : 0;
+              new PNotify({
+                desktop: {
+                  desktop: enable_native_notifications()
+                },
+                title: 'Score',
+                text: "Your score is: ".concat(score),
+                type: 'info',
+                icon: false,
+                animation: 'slide'
+              });
+            }).error(function(err){
+              new PNotify({
+                desktop: {
+                  desktop: enable_native_notifications()
+                },
+                title: 'Submit Error',
+                text: err.responseJSON.error,
+                type: 'error',
+                icon: false,
+                animation: 'slide'
+              });
+            });
+          });
+
+        $('input[name="slow-connection"]').on('switchChange.bootstrapSwitch', function(event, state) {
+          clearInterval(interval_refresh);
+          if(state) interval_refresh = setInterval(load_scoreboard, 5000);
+          else interval_refresh = setInterval(load_scoreboard, 1000);
+        });
+
+        $('input[name="native-notification"]').on('switchChange.bootstrapSwitch', function(event, state) {
+          native = state;
+        });
+        
+        $(document).ready(function(){
+          $("[name='slow-connection']").bootstrapSwitch();
+          $("[name='native-notification']").bootstrapSwitch();
+          PNotify.desktop.permission();
+          new PNotify({
+            desktop: {
+                desktop: enable_native_notifications()
+            },
+            title: 'Loading',
+            text: 'I try to download the scoreboard data!',
+            type: 'info',
+            icon: false,
+            animation: 'slide'
+          });
+
+          interval_refresh = setInterval(load_scoreboard, 1000);
+        });
+    </script>
+  </body>
+</html>
