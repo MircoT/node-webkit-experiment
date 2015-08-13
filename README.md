@@ -19,7 +19,7 @@ npm install
 node server.js
 ```
 
-**Notes**: packages have been created using **node-webkit v0.10.0-rc2**.
+**Note**: packages have been created using **node-webkit v0.10.0-rc2**.
 
 ## Client
 
@@ -28,5 +28,5 @@ simply opening the *index.html* file, or you can use the packages tha you find i
 the server folder. Otherwise you can create your own package following the
 instructions on the main [website](https://github.com/rogerwang/node-webkit/wiki/How-to-package-and-distribute-your-apps).
 
-**Notes**: remember that as default the server url is *http://node-webkit-seminar.herokuapp.com*,
+**Note**: remember that as default the server url is *http://node-webkit-seminar.herokuapp.com*,
 so you must change this url depending on where you hosted the sever.
