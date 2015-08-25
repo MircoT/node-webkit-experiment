@@ -1,7 +1,7 @@
 node-webkit-experiment
 ======================
 
-An experimental project for an *University seminary* inside **HKBU/UniPG Internship 2014**.  
+An experimental project for an *University seminary* inside **HKBU-UniPG Exchange Programme 2014**.  
 
 ## Server
 
